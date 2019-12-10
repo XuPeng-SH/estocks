@@ -8,8 +8,9 @@ __version__ = '0.1'
 api = Api(version=__version__, doc='/doc')
 db = SQLAlchemy()
 
-def create_app(args):
-    with open(args.yaml_path, 'r') as f:
+def create_app(args=None, yaml_path=None):
+    yaml_path = yaml_path if yaml_path else args.yaml_path
+    with open(yaml_path, 'r') as f:
         conf = yaml.load(f, Loader=yaml.FullLoader)
 
     server_yaml = conf['server']

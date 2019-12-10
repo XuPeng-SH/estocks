@@ -10,10 +10,10 @@ class StockMarketMetaInfoFactory(SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = 'commit'
 
     display_name = factory.Faker('word')
-    location = factory.Iterator(['Shanghai', 'ShenZhen'])
+    location = factory.Faker('random_element', elements=('Shanghai', 'ShenZhen'))
 
 
-class StockMetaInfo(SQLAlchemyModelFactory):
+class StockMetaInfoFactory(SQLAlchemyModelFactory):
     class Meta:
         model = StockMetaInfo
         sqlalchemy_session = db.session
@@ -22,4 +22,3 @@ class StockMetaInfo(SQLAlchemyModelFactory):
     market = factory.SubFactory(StockMarketMetaInfoFactory)
     code =  factory.Faker('random_number', digits=6, fix_len=True)
     display_name = factory.Faker('word')
-    location = factory.Iterator(['Shanghai', 'ShenZhen'])

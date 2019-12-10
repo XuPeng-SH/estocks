@@ -9,12 +9,12 @@ def no_cli_error(parser):
         sys.exit(1)
     return inner
 
-def main():
+def main(argv=sys.argv[1:]):
     from estocks.cli.parser import get_parser, print_args
     parser = get_parser()
-    if len(sys.argv) <= 1:
+    if len(argv) <= 1:
         parser.print_help()
         sys.exit()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     print_args(args)
     getattr(entries, args.cli, no_cli_error(parser))(args)

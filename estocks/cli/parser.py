@@ -49,6 +49,15 @@ def set_service_parser(parser):
     return parser
 
 
+def set_no_server_parser(parser):
+    parser.add_argument('--yaml_path',
+                        type=resolve_yaml_path,
+                        required=True,
+                        help='yaml config of the service, it should be a readable stream,'
+                        ' or a valid file path, or a supported class name.')
+    return parser
+
+
 def get_parser():
     parser = argparse.ArgumentParser(
             description='''{}, My Own Stock Search Engine'''.format(colored.CSTR_GREEN('estocks {}'.format(__version__)))
@@ -61,6 +70,6 @@ def get_parser():
                         'to get detailed information about each sub-command')
 
     ssp = set_service_parser(sp.add_parser('server', help='start a estocks service'))
-    ctp = set_service_parser(sp.add_parser('create_table', help='create all tables'))
-    dtp = set_service_parser(sp.add_parser('drop_table', help='drop all tables'))
+    ctp = set_no_server_parser(sp.add_parser('create_table', help='create all tables'))
+    dtp = set_no_server_parser(sp.add_parser('drop_table', help='drop all tables'))
     return parser
