@@ -40,6 +40,11 @@ class StockDayData(SimpleModel):
     id = db.Column(db.Integer, primary_key=True)
     stock_id = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, nullable=False, index=True)
+    low = db.Column(db.Float)
+    high = db.Column(db.Float)
+    start = db.Column(db.Float)
+    end = db.Column(db.Float)
+    volume = db.Column(db.Float)
 
     __table_args__ = (
         db.UniqueConstraint('stock_id', 'date', name='_uc_stock_day_data_stock_date'),

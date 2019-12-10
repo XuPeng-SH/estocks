@@ -43,3 +43,7 @@ class StockDayDataFactory(SQLAlchemyModelFactory):
 
     stock = factory.SubFactory(StockMetaInfoFactory)
     date = factory.Faker('my_date')
+    low = factory.Faker('random_number', digits=6, fix_len=True)
+    high = factory.Faker('random_number', digits=8, fix_len=True)
+    start = factory.Faker('random_number', digits=7, fix_len=True)
+    end = factory.Faker('random_number', digits=7, fix_len=True)
