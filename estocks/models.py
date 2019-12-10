@@ -18,13 +18,13 @@ class StockMetaInfo(SimpleModel):
     __tablename__ = 'stock_meta_info'
 
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(20), index=True)
+    symbol = db.Column(db.String(20), index=True)
     display_name = db.Column(db.String(50), unique=True, nullable=False)
     market_id = db.Column(db.Integer, nullable=False)
     extra = db.Column(db.JSON, default={})
 
     __table_args__ = (
-        db.UniqueConstraint('code', 'market_id', name='_uc_stock_meta_info_code_market'),
+        db.UniqueConstraint('symbol', 'market_id', name='_uc_stock_meta_info_symbol_market'),
     )
 
     market = db.relationship(

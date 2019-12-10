@@ -38,7 +38,7 @@ class Manager:
             for stock in stocks:
                 s_days = StockDayDataFactory.create_batch(3, stock=stock)
                 days.extend(s_days)
-                print(stock.code, stock.display_name)
+                print(stock.symbol, stock.display_name)
 
 
 if __name__ == '__main__':

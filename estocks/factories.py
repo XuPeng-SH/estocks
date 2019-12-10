@@ -31,7 +31,7 @@ class StockMetaInfoFactory(SQLAlchemyModelFactory):
         sqlalchemy_session_persistence = 'commit'
 
     market = factory.SubFactory(StockMarketMetaInfoFactory)
-    code =  factory.Faker('random_number', digits=6, fix_len=True)
+    symbol =  factory.Faker('random_number', digits=6, fix_len=True)
     display_name = factory.Faker('word')
 
 
