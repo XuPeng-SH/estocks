@@ -26,7 +26,7 @@ class Manager:
         from estocks import create_app, db
         app = create_app(yaml_path=yaml_path)
         with app.app_context():
-            from estocks.factories import StockMetaInfoFactory, StockMarketMetaInfoFactory
+            from estocks.factories import StockMetaInfoFactory, StockMarketMetaInfoFactory, StockDayDataFactory
             markets = []
             markets.append(StockMarketMetaInfoFactory(location='SH'))
             markets.append(StockMarketMetaInfoFactory(location='SZ'))
@@ -34,9 +34,11 @@ class Manager:
             for i in range(number):
                 stocks.append(StockMetaInfoFactory(market=markets[i%2]))
 
+            days = []
             for stock in stocks:
+                s_days = StockDayDataFactory.create_batch(3, stock=stock)
+                days.extend(s_days)
                 print(stock.code, stock.display_name)
-
 
 
 if __name__ == '__main__':

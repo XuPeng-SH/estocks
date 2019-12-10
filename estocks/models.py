@@ -17,10 +17,15 @@ class StockMarketMetaInfo(SimpleModel):
 class StockMetaInfo(SimpleModel):
     __tablename__ = 'stock_meta_info'
 
-    code = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(20), index=True)
     display_name = db.Column(db.String(50), unique=True, nullable=False)
     market_id = db.Column(db.Integer, nullable=False)
     extra = db.Column(db.JSON, default={})
+
+    __table_args__ = (
+        db.UniqueConstraint('code', 'market_id', name='_uc_stock_meta_info_code_market'),
+    )
 
     market = db.relationship(
             StockMarketMetaInfo,
@@ -32,4 +37,16 @@ class StockMetaInfo(SimpleModel):
 class StockDayData(SimpleModel):
     __tablename__ = 'stock_day_data'
 
-    code = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    stock_id = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.Date, nullable=False, index=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('stock_id', 'date', name='_uc_stock_day_data_stock_date'),
+    )
+
+    stock = db.relationship(
+        StockMetaInfo,
+        primaryjoin='and_(foreign(StockDayData.stock_id) == StockMetaInfo.id)',
+        backref=db.backref('days', uselist=True, lazy='dynamic')
+    )
