@@ -10,7 +10,7 @@ class StockMarketMetaInfo(SimpleModel):
     __tablename__ = 'stock_market_meta_info'
 
     id = db.Column(db.Integer, primary_key=True)
-    display = db.Column(db.String(50), unique=True, nullable=False)
+    display = db.Column(db.String(50), nullable=False)
     short = db.Column(db.String(10), default="")
     area = db.Column(db.String(255), nullable=False)
     country = db.Column(db.String(30), nullable=False)
@@ -24,7 +24,7 @@ class StockMetaInfo(SimpleModel):
     symbol = db.Column(db.String(20), index=True)
     display = db.Column(db.String(20), unique=True, nullable=False)
     market_id = db.Column(db.Integer, nullable=False)
-    industry = db.Column(db.String(20), nullable=False)
+    industry = db.Column(db.String(20))
     list_date = db.Column(db.Date, nullable=False)
     extra = db.Column(db.JSON, default={})
 
