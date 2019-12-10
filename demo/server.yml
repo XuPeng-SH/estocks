@@ -1,0 +1,11 @@
+version: 2
+server:
+    doc_config:
+        title: MyDemo
+    url_map_config:
+        FLASK_STRICT_SLASHES: true
+    server_config:
+        DEBUG: true
+        FLASK_SECRET_KEY: secret
+        SQLALCHEMY_DATABASE_URI: sqlite:////tmp/estocks/meta.sqlite?check_same_thread=False
+        SQLALCHEMY_TRACK_MODIFICATIONS: false
