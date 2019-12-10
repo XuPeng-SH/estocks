@@ -1,4 +1,5 @@
 import logging
+import enum
 from estocks import db
 from estocks.base.models import SimpleModel
 
@@ -9,8 +10,10 @@ class StockMarketMetaInfo(SimpleModel):
     __tablename__ = 'stock_market_meta_info'
 
     id = db.Column(db.Integer, primary_key=True)
-    display_name = db.Column(db.String(50), unique=True, nullable=False)
-    location = db.Column(db.String(255), nullable=False)
+    display = db.Column(db.String(50), unique=True, nullable=False)
+    short = db.Column(db.String(10), default="")
+    area = db.Column(db.String(255), nullable=False)
+    country = db.Column(db.String(30), nullable=False)
     extra = db.Column(db.JSON, default={})
 
 
@@ -19,8 +22,10 @@ class StockMetaInfo(SimpleModel):
 
     id = db.Column(db.Integer, primary_key=True)
     symbol = db.Column(db.String(20), index=True)
-    display_name = db.Column(db.String(50), unique=True, nullable=False)
+    display = db.Column(db.String(20), unique=True, nullable=False)
     market_id = db.Column(db.Integer, nullable=False)
+    industry = db.Column(db.String(20), nullable=False)
+    list_date = db.Column(db.Date, nullable=False)
     extra = db.Column(db.JSON, default={})
 
     __table_args__ = (
@@ -32,6 +37,10 @@ class StockMetaInfo(SimpleModel):
             primaryjoin='and_(foreign(StockMetaInfo.market_id) == StockMarketMetaInfo.id)',
             backref=db.backref('stocks', uselist=True, lazy='dynamic')
     )
+
+    @property
+    def ts_code(self):
+        return f'{self.symbol}.{self.market.short}'
 
 
 class StockDayData(SimpleModel):
