@@ -26,19 +26,18 @@ class Manager:
     def mock_data(yaml_path, number=10):
         app, db = Manager.init_app(yaml_path)
         with app.app_context():
-            from estocks.factories import StockMetaInfoFactory, StockExchangeMetaInfoFactory, StockDayDataFactory
-            markets = []
-            markets.append(StockExchangeMetaInfoFactory(area='上海'))
-            markets.append(StockExchangeMetaInfoFactory(area='深圳'))
-            stocks = []
-            for i in range(number):
-                stocks.append(StockMetaInfoFactory(market=markets[i%2]))
+            from estocks.models import StockExchangeMetaInfo
+            # from estocks import es_manager
+            exchanges = StockExchangeMetaInfo.query.all()
+            from estocks.documents import StockExchangeMetaDoc
+            for exchange in exchanges:
+                doc = StockExchangeMetaDoc(id=exchange.id,
+                        display=exchange.display,
+                        code=exchange.code,
+                        area=exchange.area,
+                        country=exchange.country)
+                doc.save()
 
-            days = []
-            for stock in stocks:
-                s_days = StockDayDataFactory.create_batch(3, stock=stock)
-                days.extend(s_days)
-                print(stock.ts_code, stock.symbol, stock.display, stock.market.area)
 
     @staticmethod
     def init_app(yaml_path):

@@ -9,3 +9,5 @@ server:
         FLASK_SECRET_KEY: secret
         SQLALCHEMY_DATABASE_URI: sqlite:////tmp/estocks/meta.sqlite?check_same_thread=False
         SQLALCHEMY_TRACK_MODIFICATIONS: false
+    es_config:
+        ES_HOSTS: 127.0.0.1:9200
