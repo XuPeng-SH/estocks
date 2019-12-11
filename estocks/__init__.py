@@ -19,9 +19,11 @@ def create_app(args=None, yaml_path=None):
     app.url_map.strict_slashes = server_yaml['url_map_config']['FLASK_STRICT_SLASHES']
     app.config.from_mapping(**server_yaml['server_config'])
 
+    from estocks import namespaces
+    import estocks.models
+
     api.init_app(app, title=server_yaml['doc_config'])
     db.init_app(app)
 
-    import estocks.models
 
     return app
