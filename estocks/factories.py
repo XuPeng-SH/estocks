@@ -4,7 +4,7 @@ from factory.alchemy import SQLAlchemyModelFactory
 from faker.providers import BaseProvider
 import datetime
 from estocks import db
-from estocks.models import (StockMarketMetaInfo, StockDayData, StockMetaInfo)
+from estocks.models import (StockExchangeMetaInfo, StockDayData, StockMetaInfo)
 
 
 class MyProvider(BaseProvider):
@@ -14,9 +14,9 @@ class MyProvider(BaseProvider):
 factory.Faker.add_provider(MyProvider)
 
 
-class StockMarketMetaInfoFactory(SQLAlchemyModelFactory):
+class StockExchangeMetaInfoFactory(SQLAlchemyModelFactory):
     class Meta:
-        model = StockMarketMetaInfo
+        model = StockExchangeMetaInfo
         sqlalchemy_session = db.session
         sqlalchemy_session_persistence = 'commit'
 
@@ -24,6 +24,7 @@ class StockMarketMetaInfoFactory(SQLAlchemyModelFactory):
     area = factory.Faker('random_element', elements=('Shanghai', 'ShenZhen'))
     country = factory.Faker('random_element', elements=('CN',))
     short = factory.Faker('random_element', elements=('SZ', 'SH'))
+    code =  factory.Faker('random_number', digits=6, fix_len=True)
 
 
 class StockMetaInfoFactory(SQLAlchemyModelFactory):
@@ -32,11 +33,17 @@ class StockMetaInfoFactory(SQLAlchemyModelFactory):
         sqlalchemy_session = db.session
         sqlalchemy_session_persistence = 'commit'
 
-    market = factory.SubFactory(StockMarketMetaInfoFactory)
+    exchange = factory.SubFactory(StockExchangeMetaInfoFactory)
     symbol =  factory.Faker('random_number', digits=6, fix_len=True)
     display = factory.Faker('word')
     industry = factory.Faker('word')
     list_date = factory.Faker('my_date')
+    delist_date = factory.Faker('my_date')
+    curr_type = 'CHY'
+    list_status = 'N'
+    fullname = factory.Faker('name')
+    enname = factory.Faker('name')
+    area = factory.Faker('random_element', elements=('Shanghai', 'ShenZhen'))
 
 
 class StockDayDataFactory(SQLAlchemyModelFactory):

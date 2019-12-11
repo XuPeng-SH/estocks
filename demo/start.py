@@ -26,10 +26,10 @@ class Manager:
     def mock_data(yaml_path, number=10):
         app, db = Manager.init_app(yaml_path)
         with app.app_context():
-            from estocks.factories import StockMetaInfoFactory, StockMarketMetaInfoFactory, StockDayDataFactory
+            from estocks.factories import StockMetaInfoFactory, StockExchangeMetaInfoFactory, StockDayDataFactory
             markets = []
-            markets.append(StockMarketMetaInfoFactory(area='上海'))
-            markets.append(StockMarketMetaInfoFactory(area='深圳'))
+            markets.append(StockExchangeMetaInfoFactory(area='上海'))
+            markets.append(StockExchangeMetaInfoFactory(area='深圳'))
             stocks = []
             for i in range(number):
                 stocks.append(StockMetaInfoFactory(market=markets[i%2]))
@@ -52,29 +52,19 @@ class Manager:
         app, db = Manager.init_app(yaml_path)
         with app.app_context():
             from estocks.factories import (StockMetaInfoFactory,
-                                           StockMarketMetaInfoFactory,
+                                           StockExchangeMetaInfoFactory,
                                            StockDayDataFactory)
             db.drop_all()
             db.create_all()
-            StockMarketMetaInfoFactory(area='深圳',
+            StockExchangeMetaInfoFactory(area='深圳',
                                        country='中国',
-                                       display='中小板',
+                                       display='深圳交易所',
+                                       code='SZSE',
                                        short='SZ')
-            StockMarketMetaInfoFactory(area='深圳',
+            StockExchangeMetaInfoFactory(area='上海',
                                        country='中国',
-                                       display='创业板',
-                                       short='SZ')
-            StockMarketMetaInfoFactory(area='深圳',
-                                       country='中国',
-                                       display='主板',
-                                       short='SZ')
-            StockMarketMetaInfoFactory(area='上海',
-                                       country='中国',
-                                       display='主板',
-                                       short='SH')
-            StockMarketMetaInfoFactory(area='上海',
-                                       country='中国',
-                                       display='科创板',
+                                       display='上海交易所',
+                                       code='SSE',
                                        short='SH')
 
 
@@ -84,30 +74,41 @@ class Manager:
         import tushare as ts
 
         api = ts.pro_api('f3e484821271b2479be7885afa84b0be7f203209bcca903d890a4692')
-        data = api.stock_basic()
-        market_cache = {}
-        from estocks.models import StockMarketMetaInfo
+        data = api.stock_basic(fields='ts_code,symbol,name,fullname,enname,area,industry,market,exchange,curr_type,is_hs,list_date,delist_date')
+        cache = {}
+        from estocks.models import StockExchangeMetaInfo
         from estocks.factories import StockMetaInfoFactory
         with app.app_context():
             for ind in data.index:
-                ts_code, symbol, name, area, industry, market, list_date = data['ts_code'][ind], \
+                ts_code, symbol, name, area, industry, market, \
+                        list_date, delist_date, exchange,curr_type,fullname,enname,is_hs = data['ts_code'][ind], \
                         data['symbol'][ind], data['name'][ind], data['area'][ind], data['industry'][ind], \
-                        data['market'][ind], data['list_date'][ind]
-                print(ind, ts_code, symbol, name, area, industry, market, list_date)
-
+                        data['market'][ind], data['list_date'][ind], data['delist_date'][ind], data['exchange'][ind], \
+                        data['curr_type'][ind], data['fullname'][ind], data['enname'][ind], data['is_hs'][ind]
+                print(ind, ts_code, symbol, name, area, industry, market, list_date, delist_date, exchange,curr_type,fullname,enname,is_hs)
                 zone = ts_code.split('.')[1]
-                market_key = f'{zone}:{market}'
-                curr_market = market_cache.get(market_key, None)
-                if not curr_market:
-                    db_market = StockMarketMetaInfo.query.filter_by(display=market, short=zone).first()
-                    market_cache[market_key] = db_market
-                    curr_market = db_market
+                exchange_key = exchange
+                curr_exchange = cache.get(exchange_key, None)
+                if not curr_exchange:
+                    db_exchange = StockExchangeMetaInfo.query.filter_by(code=exchange).first()
+                    cache[exchange_key] = db_exchange
+                    curr_exchange = db_exchange
 
-                db_stock = curr_market.stocks.filter_by(symbol=symbol).first()
+                db_stock = curr_exchange.stocks.filter_by(symbol=symbol).first()
                 if not db_stock:
                     list_date = dt.datetime.strptime(list_date, "%Y%m%d")
-                    StockMetaInfoFactory(market=curr_market, symbol=str(symbol), industry=industry,
-                            display=name, list_date=list_date)
+                    delist_date = dt.datetime.strptime(delist_date, "%Y%m%d") if delist_date else None
+                    StockMetaInfoFactory(exchange=curr_exchange, symbol=str(symbol),
+                            industry=industry,
+                            display=name,
+                            is_hs=is_hs,
+                            enname=enname,
+                            curr_type=curr_type,
+                            fullname=fullname,
+                            area=area,
+                            market=market,
+                            delist_date=delist_date,
+                            list_date=list_date)
 
 
 
