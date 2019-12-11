@@ -28,6 +28,8 @@ def create_app(args=None, yaml_path=None):
     from estocks import namespaces
     import estocks.models
 
+    import estocks.exception_handlers
+
     api.init_app(app, title=server_yaml['doc_config'])
     db.init_app(app)
 
