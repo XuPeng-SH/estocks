@@ -7,9 +7,10 @@ from estocks import es_manager
 logger = logging.getLogger(__name__)
 
 
-INDEX = Index('stock_exchange_meta_info')
+META_EXCH_INDEX = Index('stock_exchange_meta_info')
+META_STK_INDEX = Index('stock_meta_info')
 
-@INDEX.document
+@META_EXCH_INDEX.document
 class StockExchangeMetaDoc(Document):
     id = Integer()
     display = Text(analyzer='snowball', fields={'raw': Keyword()})
@@ -17,5 +18,13 @@ class StockExchangeMetaDoc(Document):
     area = Text(analyzer='snowball')
     country = Text(analyzer='snowball')
 
-    # class Index:
-    #     name = 'stock_exchange_meta_info'
+@META_STK_INDEX.document
+class StockMetaDoc(Document):
+    id = Integer()
+    display = Text(analyzer='snowball', fields={'raw': Keyword()})
+    area = Text(analyzer='snowball')
+    industry = Text(analyzer='snowball')
+    symbol = Text(analyzer='snowball')
+    fullname = Text(analyzer='snowball')
+    market = Text(analyzer='snowball')
+    enname = Text(analyzer='snowball')

@@ -7,15 +7,60 @@ from elasticsearch_dsl import Search, Text, Q, MultiSearch
 from estocks.namespaces import search_api as api
 from estocks.request_parser import search_parser, pagination_parser
 from estocks import es_manager
-from estocks.documents import StockExchangeMetaDoc, INDEX
-from estocks.models import StockExchangeMetaInfo
+from estocks.documents import (StockExchangeMetaDoc, META_EXCH_INDEX, META_STK_INDEX,
+        StockMetaDoc)
+from estocks.models import (StockExchangeMetaInfo, StockMetaInfo)
 from estocks.schemas import (EmptySchema, StockExchangeMetaInfoSchema,
-        StockExchangeMetaInfoListSchema)
+        StockExchangeMetaInfoListSchema, StockMetaInfoSchema, StockMetaInfoListSchema)
 
 logger = logging.getLogger(__name__)
 
 
-@api.route('/search/stock_exchanges')
+@api.route('/search/meta/stocks')
+class StockMetaViewSet(Resource):
+    @api.response(201, 'Success', EmptySchema)
+    @api.response(400, 'Error', EmptySchema, validate=False )
+    def post(self):
+        stocks = StockMetaInfo.query.all()
+        for stock in stocks:
+            doc = StockMetaDoc(
+                    meta={'id': stock.id},
+                    id=stock.id,
+                    display=stock.display,
+                    symbol=stock.symbol,
+                    fullname=stock.fullname,
+                    market=stock.market,
+                    industry=stock.industry,
+                    area=stock.area)
+            doc.save()
+
+        return SchemaResponse()
+
+    @api.response(204, 'Success', EmptySchema, validate=False)
+    def delete(self):
+        META_STK_INDEX.delete()
+
+        return SchemaResponse()
+
+    @api.expect(search_parser(), validate=True)
+    @api.response(200, 'Success', StockMetaInfoListSchema)
+    @api.response(400, 'Error', EmptySchema, validate=False)
+    def get(self):
+        keyword = g.args.keyword
+        q = Q('multi_match', query=keyword, fields=['display', 'fullname', 'enname',
+            'symbol', 'area'])
+        this_search = Search(using=es_manager.client).query(q)[g.args.start:g.args.end]
+        logger.debug(this_search.to_dict())
+        resp = this_search.execute()
+
+        stocks = [StockMetaInfo.query.get(hit.id) for hit in resp.hits]
+        return SchemaResponse(result={
+            'list': stocks
+        })
+
+
+
+@api.route('/search/meta/stock_exchanges')
 class StockExchangesViewSet(Resource):
     @api.expect(search_parser(), validate=True)
     @api.response(200, 'Success', StockExchangeMetaInfoListSchema)
@@ -36,7 +81,7 @@ class StockExchangesViewSet(Resource):
 
     @api.response(204, 'Success', EmptySchema, validate=False)
     def delete(self):
-        INDEX.delete()
+        META_EXCH_INDEX.delete()
 
         return SchemaResponse(result={})
 
