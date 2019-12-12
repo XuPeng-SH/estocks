@@ -3,7 +3,7 @@ from pprint import pprint
 from flask import g
 from flask_restplus import Resource
 from restplus_enhancement.schema_model import SchemaResponse
-from elasticsearch_dsl import Search, Text, Q, MultiSearch
+from elasticsearch_dsl import Search, Text, Q, MultiSearch, SF
 from estocks.namespaces import search_api as api
 from estocks.request_parser import search_parser, pagination_parser
 from estocks import es_manager
@@ -47,6 +47,10 @@ class StockMetaViewSet(Resource):
     @api.response(400, 'Error', EmptySchema, validate=False)
     def get(self):
         keyword = g.args.keyword
+        # sq1_1 = Q('match', fullname=keyword)
+        # sq1_2 = Q('match', enname=keyword)
+        # sq1_3 = Q('match', area=keyword)
+        # sq1_4 = Q('match', industry=keyword)
         sq1_1 = Q('match_phrase', fullname=keyword)
         sq1_2 = Q('match_phrase', enname=keyword)
         sq1_3 = Q('match_phrase', area=keyword)
@@ -54,10 +58,18 @@ class StockMetaViewSet(Resource):
         sq1 = Q('bool', should=[sq1_1, sq1_2])
         sq2 = Q('multi_match', query=keyword, fields=['display', 'symbol'])
 
-        q = Q('bool', should=[sq1, sq2])
+        q = Q('function_score', functions=[
+            # SF({'weight':5, 'filter': sq1_4}),
+            # SF({'weight': 1,'filter': sq1_1}),
+            # SF({'weight': 2,'filter': sq1_2}),
+            # SF({'weight': 0.5,'filter': sq1_3}),
+            SF({'weight': 10, 'filter': sq2}),
+        ])
+
+        # q = Q('bool', should=[sq1, sq2])
 
         this_search = Search(using=es_manager.client, index=META_STK_INDEX._name).query(q)[g.args.start:g.args.end]
-        logger.info(this_search.to_dict())
+        print(this_search.to_dict())
         resp = this_search.execute()
 
         stocks = [StockMetaInfo.query.get(hit.id) for hit in resp.hits]
