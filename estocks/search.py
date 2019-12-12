@@ -47,25 +47,30 @@ class StockMetaViewSet(Resource):
     @api.response(400, 'Error', EmptySchema, validate=False)
     def get(self):
         keyword = g.args.keyword
-        # sq1_1 = Q('match', fullname=keyword)
-        # sq1_2 = Q('match', enname=keyword)
-        # sq1_3 = Q('match', area=keyword)
-        # sq1_4 = Q('match', industry=keyword)
         sq1_1 = Q('match_phrase', fullname=keyword)
         sq1_2 = Q('match_phrase', enname=keyword)
         sq1_3 = Q('match_phrase', area=keyword)
         sq1_4 = Q('match_phrase', industry=keyword)
-        sq1 = Q('bool', should=[sq1_1, sq1_2])
-        sq2 = Q('multi_match', query=keyword, fields=['display', 'symbol'])
+        ssq1 = Q('match_phrase', symbol=keyword)
+        ssq2 = Q('match_phrase', display=keyword)
 
-        q = Q('function_score', functions=[
-            # SF({'weight':5, 'filter': sq1_4}),
-            # SF({'weight': 1,'filter': sq1_1}),
-            # SF({'weight': 2,'filter': sq1_2}),
-            # SF({'weight': 0.5,'filter': sq1_3}),
-            SF({'weight': 10, 'filter': sq2}),
+        q = Q('function_score',
+            query=Q(),
+            boost=1,
+            score_mode='max',
+            min_score=2,
+            functions=[
+                SF({'weight': 5, 'filter': ssq1}),
+                SF({'weight': 5, 'filter': ssq2}),
+                SF({'weight': 1,'filter': sq1_1}),
+                SF({'weight': 1,'filter': sq1_2}),
+                SF({'weight': 1,'filter': sq1_3}),
+                SF({'weight':3, 'filter': sq1_4}),
         ])
 
+
+        # sq1 = Q('bool', should=[sq1_1, sq1_2])
+        # sq2 = Q('multi_match', query=keyword, fields=['display', 'symbol'])
         # q = Q('bool', should=[sq1, sq2])
 
         this_search = Search(using=es_manager.client, index=META_STK_INDEX._name).query(q)[g.args.start:g.args.end]
@@ -73,6 +78,7 @@ class StockMetaViewSet(Resource):
         resp = this_search.execute()
 
         stocks = [StockMetaInfo.query.get(hit.id) for hit in resp.hits]
+        print([hit.meta.score for hit in resp.hits])
         return SchemaResponse(result={
             'meta': {'total': resp.hits.total.value},
             'list': stocks
