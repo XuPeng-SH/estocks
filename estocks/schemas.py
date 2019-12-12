@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 EmptySchema = search_api.new_schema(name='EmptySchema', fields={
 })
 
+SearchHitsMetaSchema = search_api.new_schema(name='SearchHitsMetaSchema', fields={
+    'total': fields.Integer(description='total hits'),
+})
+
 StockExchangeMetaInfoSchema = search_api.new_schema(name='StockExchangeMetaInfoSchema', fields={
     'id' : fields.Integer(description='id', readonly=True),
     'display' : fields.String(description='name of exchange', example='上海交易所'),
@@ -34,5 +38,6 @@ StockMetaInfoSchema = search_api.new_schema(name='StockMetaInfoSchema', fields={
 })
 
 StockMetaInfoListSchema = search_api.new_schema(name='StockMetaInfoListSchema', fields={
+    'meta': fields.Nested(SearchHitsMetaSchema),
     'list': fields.List(fields.Nested(StockMetaInfoSchema))
 })

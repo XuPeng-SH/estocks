@@ -47,14 +47,22 @@ class StockMetaViewSet(Resource):
     @api.response(400, 'Error', EmptySchema, validate=False)
     def get(self):
         keyword = g.args.keyword
-        q = Q('multi_match', query=keyword, fields=['display', 'fullname', 'enname',
-            'symbol', 'area'])
-        this_search = Search(using=es_manager.client).query(q)[g.args.start:g.args.end]
-        logger.debug(this_search.to_dict())
+        sq1_1 = Q('match_phrase', fullname=keyword)
+        sq1_2 = Q('match_phrase', enname=keyword)
+        sq1_3 = Q('match_phrase', area=keyword)
+        sq1_4 = Q('match_phrase', industry=keyword)
+        sq1 = Q('bool', should=[sq1_1, sq1_2])
+        sq2 = Q('multi_match', query=keyword, fields=['display', 'symbol'])
+
+        q = Q('bool', should=[sq1, sq2])
+
+        this_search = Search(using=es_manager.client, index=META_STK_INDEX._name).query(q)[g.args.start:g.args.end]
+        logger.info(this_search.to_dict())
         resp = this_search.execute()
 
         stocks = [StockMetaInfo.query.get(hit.id) for hit in resp.hits]
         return SchemaResponse(result={
+            'meta': {'total': resp.hits.total.value},
             'list': stocks
         })
 

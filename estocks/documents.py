@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, date
-from elasticsearch_dsl import Search, Document, Date, Integer, Keyword, Text, Q, MultiSearch, Index
+from elasticsearch_dsl import (Search, Document, Date, Integer, Keyword, Text, Q,
+        MultiSearch, Index, Completion)
 from elasticsearch_dsl.query import MultiMatch, Match
 from estocks import es_manager
 
@@ -21,10 +22,15 @@ class StockExchangeMetaDoc(Document):
 @META_STK_INDEX.document
 class StockMetaDoc(Document):
     id = Integer()
-    display = Text(analyzer='snowball', fields={'raw': Keyword()})
+    display = Text(analyzer='snowball', fields={
+        'raw': Keyword(),
+        'suggest': Completion(analyzer='standard')
+    })
     area = Text(analyzer='snowball')
     industry = Text(analyzer='snowball')
-    symbol = Text(analyzer='snowball')
+    symbol = Keyword(fields={
+        'suggest': Completion(analyzer='standard')
+    })
     fullname = Text(analyzer='snowball')
     market = Text(analyzer='snowball')
     enname = Text(analyzer='snowball')
