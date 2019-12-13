@@ -34,6 +34,7 @@ StockMetaInfoSchema = search_api.new_schema(name='StockMetaInfoSchema', fields={
     'fullname' : fields.String(description='stock fullname', example='上海沪工有限公司'),
     'enname' : fields.String(description='stock English name', example='SHHG'),
     'market' : fields.String(description='market type name', example='创业板'),
+    'list_date' : fields.Date(description='list date', example='2012-08-09'),
     'extra' : fields.Raw(description='exchange extra info', default={})
 })
 

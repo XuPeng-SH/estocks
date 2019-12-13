@@ -34,3 +34,4 @@ class StockMetaDoc(Document):
     fullname = Text(analyzer='snowball')
     market = Text(analyzer='snowball')
     enname = Text(analyzer='snowball')
+    list_date = Date()
